@@ -1,5 +1,5 @@
 import gym
-
+from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM
 class VPPEnv(gym.Env):
     """
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
@@ -9,6 +9,7 @@ class VPPEnv(gym.Env):
         super(VPPEnv, self).__init__()
         self.config = config
         self.data = data
+        self._setup_state()
 
     def step(self, action):
         """
@@ -33,6 +34,12 @@ class VPPEnv(gym.Env):
         Perform any necessary cleanup.
         """
         pass
+    
+    def _setup_state(self):
+        """
+        Initialize the environment state.
+        """
+        self.observation_space = gym.spaces.Box(low=LOW, high=HIGH, shape=(OBSERVATION_SPACE_DIM,), dtype=float)
     
     def _get_obs(self):
         """
