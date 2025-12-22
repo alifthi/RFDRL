@@ -1,0 +1,5 @@
+""" Data path """
+HH_LOAD = "./data/households_load_profile.csv"
+PRICE = "./data/market_prices_2020_profile.csv"
+PV_POWER = "./data/PV_load_2020_profile.csv"
+WT_POWER = "./data/WT_load_2020_profile.csv"

@@ -5,9 +5,10 @@ class VPPEnv(gym.Env):
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, data):
         super(VPPEnv, self).__init__()
         self.config = config
+        self.data = data
 
     def step(self, action):
         """
