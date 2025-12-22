@@ -1,5 +1,5 @@
 import gym
-from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM
+from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM, NUM_EVS, ACTION_PER_PILE
 class VPPEnv(gym.Env):
     """
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
@@ -9,6 +9,7 @@ class VPPEnv(gym.Env):
         super(VPPEnv, self).__init__()
         self.config = config
         self.data = data
+        self.evs = []
         self._setup_state()
 
     def step(self, action):
@@ -40,6 +41,23 @@ class VPPEnv(gym.Env):
         Initialize the environment state.
         """
         self.observation_space = gym.spaces.Box(low=LOW, high=HIGH, shape=(OBSERVATION_SPACE_DIM,), dtype=float)
+        
+    def _setup_action(self):
+        """
+        Initialize the action space.
+        """
+        self.action_space = gym.spaces.Discrete(3*NUM_EVS)  
+        
+    def _update_evs(self, evs):
+        """
+        Update electric vehicles.
+        """
+        self.evs = evs
+    
+    def decode_action(self, one_idx):
+        pile_idx = one_idx // ACTION_PER_PILE
+        mode = one_idx % ACTION_PER_PILE
+        return pile_idx, mode
     
     def _get_obs(self):
         """
@@ -58,4 +76,4 @@ class VPPEnv(gym.Env):
         Calculate the reward for the current step.
         """
         pass
-    
+        

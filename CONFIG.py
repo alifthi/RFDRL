@@ -10,3 +10,7 @@ WT_POWER = "./data/WT_load_2020_profile.csv"
 OBSERVATION_SPACE_DIM = 11
 LOW = -1
 HIGH = 1
+
+NUM_EVS = 4
+
+ACTION_PER_PILE = 3
