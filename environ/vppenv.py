@@ -32,3 +32,22 @@ class VPPEnv(gym.Env):
         Perform any necessary cleanup.
         """
         pass
+    
+    def _get_obs(self):
+        """
+        Create the observation for the current state.
+        """
+        pass
+    
+    def _man_observation(self):
+        """
+        Manipulate the observation vector.
+        """
+        pass
+    
+    def _get_reward(self):
+        """
+        Calculate the reward for the current step.
+        """
+        pass
+    
