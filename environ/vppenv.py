@@ -1,6 +1,7 @@
 import gym
-from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM, NUM_EVS, ACTION_PER_PILE, PER_EV_POWER
+from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM, NUM_EVS, ACTION_PER_PILE, PER_EV_POWER, STEP_TIME
 import numpy as np
+from EV.EVQueue import EVQueue
 class VPPEnv(gym.Env):
     """
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
@@ -13,9 +14,10 @@ class VPPEnv(gym.Env):
         self.evs = []
         self.modes = []
         self.departed_evs = []
-        self.dt = 5/60
+        self.dt = STEP_TIME
         self.ev_cap = 100.0
         self._setup_state()
+        self.evqueue = EVQueue()
 
     def step(self, action):
         """
@@ -78,8 +80,8 @@ class VPPEnv(gym.Env):
         Request new electric vehicles to replace departed ones.
         """
         for idx in self.departed_evs:
-            # self.evs[idx] = 
-            pass
+            self.evs[idx] = self.evqueue._get_ev()
+        self.departed_evs = []
     
     def _get_obs(self):
         """
