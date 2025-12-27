@@ -1,5 +1,6 @@
 import gym
-from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM, NUM_EVS, ACTION_PER_PILE
+from CONFIG import LOW, HIGH, OBSERVATION_SPACE_DIM, NUM_EVS, ACTION_PER_PILE, PER_EV_POWER
+import numpy as np
 class VPPEnv(gym.Env):
     """
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
@@ -10,13 +11,27 @@ class VPPEnv(gym.Env):
         self.config = config
         self.data = data
         self.evs = []
+        self.modes = []
+        self.departed_evs = []
+        self.dt = 5/60
+        self.ev_cap = 100.0
         self._setup_state()
 
     def step(self, action):
         """
         Execute one time step within the environment.
         """
-        pass
+        indices = np.nonzero(action)[0]
+        self.modes = [self.decode_action(idx) for idx in indices]
+        for i, ev in enumerate(self.evs):
+            ev.soc += self.modes[i] * PER_EV_POWER*self.dt / self.ev_cap
+            ev.soc = np.clip(ev.soc, 0.0, 1.0)
+            ev.stay -= 1
+            if ev.stay <= 0:
+                self.departed_evs.append(i)
+        if self.departed_evs:
+            self._req_for_evs()
+                
 
     def reset(self):
         """
@@ -55,9 +70,16 @@ class VPPEnv(gym.Env):
         self.evs = evs
     
     def decode_action(self, one_idx):
-        pile_idx = one_idx // ACTION_PER_PILE
-        mode = one_idx % ACTION_PER_PILE
-        return pile_idx, mode
+        mode = one_idx % ACTION_PER_PILE - 1
+        return mode
+    
+    def _req_for_evs(self):
+        """
+        Request new electric vehicles to replace departed ones.
+        """
+        for idx in self.departed_evs:
+            # self.evs[idx] = 
+            pass
     
     def _get_obs(self):
         """
