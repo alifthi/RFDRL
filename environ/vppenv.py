@@ -7,11 +7,9 @@ class VPPEnv(gym.Env):
     A custom OpenAI Gym environment for the VPP (Virtual Power Plant) simulation.
     """
 
-    def __init__(self, config, data):
+    def __init__(self, data):
         super(VPPEnv, self).__init__()
-        self.config = config
         self.data = data
-        self.evs = []
         self.modes = []
         self.departed_evs = []
         self.t = 0
@@ -19,11 +17,13 @@ class VPPEnv(gym.Env):
         self.ev_cap = 100.0
         self._setup_state()
         self.evqueue = EVQueue()
+        self.evs = [self.evqueue._get_ev() for _ in range(NUM_EVS)]
 
     def step(self, action):
         """
         Execute one time step within the environment.
         """
+        done = False
         indices = np.nonzero(action)[0]
         self.modes = [self.decode_action(idx) for idx in indices]
         for i, ev in enumerate(self.evs):
@@ -37,14 +37,15 @@ class VPPEnv(gym.Env):
             self._req_for_evs()
         obs = self._get_obs()
         self.t += 1
-        
-        return reward, obs
+        if self.t == 35040:
+            done = True
+        return reward, obs,  done
                 
     def reset(self):
         """
         Reset the state of the environment to an initial state.
         """
-        pass
+        self.t = 0
 
     def render(self, mode='human'):
         """
@@ -111,10 +112,10 @@ class VPPEnv(gym.Env):
         self.t = getattr(self, "t", 0)
 
         # dataset arrays (defensive)
-        p_pv = float(self.data.pv[self.t]) if hasattr(self.data, "pv") else 0.0
-        p_wind = float(self.data.wind[self.t]) if hasattr(self.data, "wind") else 0.0
-        p_load = float(self.data.load[self.t]) if hasattr(self.data, "load") else 0.0
-        price  = float(self.data.price[self.t]) if hasattr(self.data, "price") else 0.0
+        p_pv = float(self.data.pv[self.t]) 
+        p_wind = float(self.data.wind[self.t])
+        p_load = float(self.data.load[self.t])
+        price  = float(self.data.price[self.t])
 
         # ----- normalization constants (automatic, robust) -----
         # P_nom: nominal power scale (kW). use dataset max or fallback 100 kW
