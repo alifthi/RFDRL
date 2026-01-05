@@ -11,7 +11,7 @@ OBSERVATION_SPACE_DIM = 11
 LOW = -1
 HIGH = 1
 
-MODEL_SAVE_PATH = "model/dqn_agent_checkpoint.h5"
+MODEL_SAVE_PATH = "trained_models/dqn_agent_checkpoint.h5"
 
 NUM_EVS = 4
 
@@ -23,4 +23,9 @@ STEP_TIME = 15/60
 
 
 LAMBDA1 = 1e-4
-LAMBDA2 = 1e-4 
+LAMBDA2 = 1e-4
+
+NUM_AGENTS = 5
+EPISODES_PER_AGGREGATION = 10 
+
+AGENTS_SAVE_PATH = "trained_models/aggregated_dqn_agent"
