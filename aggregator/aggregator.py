@@ -40,6 +40,7 @@ class aggregator:
                     learning_rate=1e-3,
                     gamma=0.99)
             self.agents.append(agent)
+        self.aggregate()
     def set_agents_weights(self, weights):
         for agent in self.agents:
             agent.q_network.model.set_weights(weights)
