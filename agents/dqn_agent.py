@@ -8,7 +8,7 @@ from collections import deque
 from model.architecutre import QNetwork
 from utils.load_data import load_data
 from environ.vppenv import VPPEnv
-from CONFIG import NUM_EVS, ACTION_PER_PILE
+from CONFIG import NUM_EVS, ACTION_PER_PILE, LAMBDA1
 
 
 class ReplayBuffer:
@@ -58,9 +58,9 @@ class DQNAgent:
         self.num_evs = num_evs
         self.num_actions = num_actions
         self.gamma = gamma
-        self.epsilon = 1.0  # Exploration rate
+        self.epsilon = 0.7  # Exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.95
         
         # Q-Networks (online and target)
         self.q_network = QNetwork(obs_dim, num_evs, num_actions, hidden_dims)
@@ -73,7 +73,7 @@ class DQNAgent:
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
         
         # Replay buffer
-        self.replay_buffer = ReplayBuffer(max_size=10000)
+        self.replay_buffer = ReplayBuffer(max_size=100000)
         
         # Training stats
         self.loss_history = []
@@ -162,7 +162,16 @@ class DQNAgent:
                 
                 # MSE loss: E[(Q(s, a) - target)^2]
                 loss += tf.reduce_mean(tf.square(selected_q - targets[ev_idx]))
-            
+                
+                # Regularization term
+                # q_values[ev_idx] shape is 128x3 and selected_q shape is 128
+                # reduce each element in selected_q from each row in q_values[ev_idx]
+                diff = q_values[ev_idx] - tf.expand_dims(selected_q, axis=1)
+
+                # diff = q_values[ev_idx] - selected_q
+                reg_loss = tf.reduce_max(tf.abs(diff**2))
+                loss += LAMBDA1 * reg_loss  
+                
             # Average loss across EVs
             loss /= self.num_evs
         # Backpropagation

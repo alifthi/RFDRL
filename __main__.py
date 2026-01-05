@@ -53,7 +53,7 @@ if __name__ == "__main__":
     print("\n[4/4] Training Agent...")
     print("-" * 60)
     
-    episodes = 100
+    episodes = 200
     batch_size = 128
     update_target_freq = 10
     episode_rewards = []
@@ -77,7 +77,8 @@ if __name__ == "__main__":
                 action_onehot[ev_idx * ACTION_PER_PILE + action_idx] = 1
             
             # Step environment
-            reward, next_obs, done = env.step(action_onehot)
+            next_obs, reward, done,_ = env.step(action_onehot)
+            # reward = -reward
             if next_obs is None:
                 next_obs = np.zeros(11, dtype=np.float32)
             
@@ -118,35 +119,36 @@ if __name__ == "__main__":
         print(f"  ✓ Model saved to {MODEL_SAVE_PATH}")
         # else:
         #     print(f"  ✓ Model saved to {MODEL_SAVE_PATH}")
+    # Plot training curve
+        print("\nGenerating training curve...")
+        plt.figure(figsize=(12, 5))
+        
+        plt.subplot(1, 2, 1)
+        plt.plot(episode_rewards, label='Episode Reward', alpha=0.7)
+        plt.plot(np.convolve(episode_rewards, np.ones(10)/10, mode='valid'), 
+                label='Moving Avg (10)', linewidth=2, color='orange')
+        plt.xlabel('Episode')
+        plt.ylabel('Reward')
+        plt.title('Training Rewards')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        plt.subplot(1, 2, 2)
+        plt.plot(agent.loss_history, label='Training Loss', alpha=0.7)
+        plt.xlabel('Training Step')
+        plt.ylabel('MSE Loss')
+        plt.title('Training Loss')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        plt.savefig('training_results.png', dpi=100, bbox_inches='tight')
+        print("✓ Training curve saved to training_results.png")
     
     print("-" * 60)
     print("\n✓ Training completed!")
     
-    # Plot training curve
-    print("\nGenerating training curve...")
-    plt.figure(figsize=(12, 5))
     
-    plt.subplot(1, 2, 1)
-    plt.plot(episode_rewards, label='Episode Reward', alpha=0.7)
-    plt.plot(np.convolve(episode_rewards, np.ones(10)/10, mode='valid'), 
-             label='Moving Avg (10)', linewidth=2, color='orange')
-    plt.xlabel('Episode')
-    plt.ylabel('Reward')
-    plt.title('Training Rewards')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    plt.subplot(1, 2, 2)
-    plt.plot(agent.loss_history, label='Training Loss', alpha=0.7)
-    plt.xlabel('Training Step')
-    plt.ylabel('MSE Loss')
-    plt.title('Training Loss')
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    
-    plt.tight_layout()
-    plt.savefig('training_results.png', dpi=100, bbox_inches='tight')
-    print("✓ Training curve saved to training_results.png")
     
     print("\n" + "="*60)
     print(f"Final Results:")
