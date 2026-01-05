@@ -50,19 +50,20 @@ if __name__ == "__main__":
     episodes = 200
     batch_size = 128
     update_target_freq = 10
-    episode_rewards = []
+    episode_rewards_list = [[] for _ in range(len(aggregator_instance.agents))]
     max_steps = 35050
     
     for episode in range(episodes):
-        obs = env.reset()
-        if obs is None:
-            obs = np.zeros(11, dtype=np.float32)
-        done = False
-        episode_reward = 0.0
-        step = 0
-        print(f"\nEpisode {episode + 1}/{episodes}")
         for agent_idx, agent in enumerate(aggregator_instance.agents):
-            
+            episode_rewards = episode_rewards_list[agent_idx]
+            obs = env.reset()
+            if obs is None:
+                obs = np.zeros(11, dtype=np.float32)
+                
+            done = False
+            episode_reward = 0.0
+            step = 0
+            print(f"\nEpisode {episode + 1}/{episodes} Agent {agent_idx + 1}/{len(aggregator_instance.agents)}")
             while not done and step < max_steps:
                 # Select action using epsilon-greedy policy
                 actions = agent.select_action(obs, training=True)
@@ -99,17 +100,18 @@ if __name__ == "__main__":
             agent.decay_epsilon()
             
             episode_rewards.append(episode_reward)
-            
+        
             # Save model every episode
             agent.q_network.model.save(AGENTS_SAVE_PATH + f"_agent_{agent_idx}.h5")
-            
+        
 
             avg_reward = np.mean(episode_rewards[-10:])
             print(f"Episode {episode + 1:3d}/{episodes} | "
                     f"Reward: {episode_reward:8.2f} | "
                     f"Avg (10): {avg_reward:8.2f} | "
                     f"ε: {agent.epsilon:.3f} | "
-                    f"Buffer: {len(agent.replay_buffer)}")
+                    f"Buffer: {len(agent.replay_buffer)} | "
+                    f"Agent: {agent_idx + 1}/{len(aggregator_instance.agents)}")
             print(f"  ✓ Model saved to {AGENTS_SAVE_PATH}_agent_{agent_idx}.h5")
 
             print("\nGenerating training curve...")
@@ -136,6 +138,8 @@ if __name__ == "__main__":
             plt.tight_layout()
             plt.savefig(f'training_results_{agent_idx}.png', dpi=100, bbox_inches='tight')
             print("✓ Training curve saved to training_results.png")
+            
+            episode_rewards_list[agent_idx] = episode_rewards
         if (episode + 1) % EPISODES_PER_AGGREGATION == 0:
             print("\nAggregating agent models using FedAVG...")
             aggregator_instance.aggregate()
