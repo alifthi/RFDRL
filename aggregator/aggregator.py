@@ -6,19 +6,19 @@ class aggregator:
         self.agents = []
         
         self.main_model = DQNAgent(
-            obs_dim=11,
-            num_evs=NUM_EVS,
-            num_actions=ACTION_PER_PILE,
-            hidden_dims=[64, 128, 64],
-            learning_rate=1e-3,
-            gamma=0.99)
+                            obs_dim=11,
+                            num_evs=NUM_EVS,
+                            num_actions=ACTION_PER_PILE,
+                            hidden_dims=[64, 128, 64],
+                            learning_rate=1e-3,
+                            gamma=0.99)
         
         self.init_agents()
         
     def aggregate(self):
         '''FedAVG aggregation of agents' model weights'''
         main_weights = self.main_model.q_network.model.get_weights()
-        new_weights = [np.zeros_like(w) for w in main_weights]
+        new_weights = [np.zeros_like(w, dtype=np.float64) for w in main_weights]
         
         for agent in self.agents:
             agent_weights = agent.q_network.model.get_weights()
